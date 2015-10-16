@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/ivPin"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_pin" />
+
+
+    <com.github.siyamed.shapeimageview.CircularImageView
+        android:id="@+id/ivPhoto"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="3dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_account"
+        app:siBorderWidth="1dp"
+        app:siBorderColor="@android:color/white"/>
+
+</RelativeLayout>

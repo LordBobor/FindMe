@@ -1,0 +1,41 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+
+    defaultConfig {
+        applicationId "dev.ekozoch.findme"
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        renderscriptTargetApi 21
+        renderscriptSupportModeEnabled true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'com.google.android.gms:play-services-maps:8.1.0'
+    compile 'com.google.android.gms:play-services-location:8.1.0'
+    compile 'com.google.android.gms:play-services-drive:8.1.0'
+    compile 'com.github.asne:asne-facebook:0.3.3'
+    compile 'com.github.asne:asne-vk:0.3.3'
+    compile 'com.parse.bolts:bolts-android:1.+'
+    compile 'com.github.siyamed:android-shape-imageview:0.9.+@aar'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+
+    compile project(':blurringview')
+}
