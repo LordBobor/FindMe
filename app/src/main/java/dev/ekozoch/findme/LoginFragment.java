@@ -32,7 +32,6 @@ import dev.ekozoch.findme.parse.classes.User;
 public class LoginFragment extends Fragment implements OnLoginCompleteListener,
         SocialNetworkManager.OnInitializationCompleteListener,
         OnRequestSocialPersonCompleteListener {
-    public static SocialNetworkManager mSocialNetworkManager;
     /**
      * SocialNetwork Ids in ASNE:
      * 1 - Twitter
@@ -45,9 +44,33 @@ public class LoginFragment extends Fragment implements OnLoginCompleteListener,
      */
     public static final int FACEBOOK = 4;
     public static final int VK = 5;
-
+    public static SocialNetworkManager mSocialNetworkManager;
     private Button facebook;
     private Button vkontakte;
+    private View.OnClickListener loginClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            int networkId = 0;
+            switch (view.getId()) {
+                case R.id.facebook:
+                    networkId = FACEBOOK;
+                    break;
+                case R.id.vk:
+                    networkId = VK;
+                    break;
+            }
+            SocialNetwork socialNetwork = mSocialNetworkManager.getSocialNetwork(networkId);
+            if (!socialNetwork.isConnected()) {
+                if (networkId != 0) {
+                    socialNetwork.requestLogin();
+                } else {
+                    Toast.makeText(getActivity(), "Social Network Authorization Error", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                startProfile(socialNetwork.getID());
+            }
+        }
+    };
 
     public LoginFragment() {
     }
@@ -105,8 +128,6 @@ public class LoginFragment extends Fragment implements OnLoginCompleteListener,
         return rootView;
     }
 
-
-
     @Override
     public void onSocialNetworkManagerInitialized() {
         //when init SocialNetworks - get and setup login only for initialized SocialNetworks
@@ -137,6 +158,7 @@ public class LoginFragment extends Fragment implements OnLoginCompleteListener,
         final String accountPassword = socialPerson.id;
         final String userName = socialPerson.name;
         final String userPic = socialPerson.avatarURL;
+
         final User user = (User) ParseUser.getCurrentUser();
         user.setUsername(accountUsername);
         user.setPassword(accountPassword);
@@ -174,30 +196,4 @@ public class LoginFragment extends Fragment implements OnLoginCompleteListener,
             }
         });
     }
-
-
-    private View.OnClickListener loginClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            int networkId = 0;
-            switch (view.getId()){
-                case R.id.facebook:
-                    networkId = FACEBOOK;
-                    break;
-                case R.id.vk:
-                    networkId = VK;
-                    break;
-            }
-            SocialNetwork socialNetwork = mSocialNetworkManager.getSocialNetwork(networkId);
-            if(!socialNetwork.isConnected()) {
-                if(networkId != 0) {
-                    socialNetwork.requestLogin();
-                } else {
-                    Toast.makeText(getActivity(), "Social Network Authorization Error", Toast.LENGTH_LONG).show();
-                }
-            } else {
-                startProfile(socialNetwork.getID());
-            }
-        }
-    };
 }

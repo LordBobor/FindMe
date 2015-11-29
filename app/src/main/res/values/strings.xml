@@ -3,4 +3,5 @@
     <string name="title_activity_main">Map</string>
     <string name="fm_login_social">LogIn via Social Networks</string>
     <string name="fm_err">"Error: "</string>
+    <string name="title_activity_user_detail">UserDetailActivity</string>
 </resources>
