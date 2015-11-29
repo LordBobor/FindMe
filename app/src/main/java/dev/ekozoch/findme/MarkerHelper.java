@@ -101,7 +101,7 @@ public class MarkerHelper {
                         .flat(true)
                         .icon(BitmapDescriptorFactory.fromBitmap(MarkerHelper.createDrawableFromView(context, markerView)))
                         .anchor(0.5f, 0.5f)
-                        .snippet(user.getObjectId() + " " + user.getName())
+                        .snippet(user.getObjectId() + " " + user.getUserPic())
                         .position(new LatLng(user.getLatitude(), user.getLongitude())));
 
                 if (listener != null) listener.onMarkerAdded(marker);

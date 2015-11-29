@@ -7,12 +7,10 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.fivehundredpx.android.blur.BlurringView;
@@ -20,18 +18,14 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -206,28 +200,6 @@ public class MainActivity extends BaseActivity implements GoogleMap.OnMarkerClic
                             .getLatitude(), location.getLongitude()), 18.0f));
                 }
             });
-
-            final View markerView = ((LayoutInflater) this.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.layout_pin, null);
-            ImageView ivIcon = (ImageView) markerView.findViewById(R.id.ivPhoto);
-            Picasso.with(this).load(FindMeApplication.currentUser.getUserPic()).into(ivIcon, new Callback() {
-                @Override
-                public void onSuccess() {
-                    mPositionMarker = mMap.addMarker(new MarkerOptions()
-                            .flat(true)
-                            .icon(BitmapDescriptorFactory.fromBitmap(MarkerHelper.createDrawableFromView(MainActivity.this, markerView)))
-                            .anchor(0.5f, 0.5f)
-                            .snippet(getUser().getObjectId() + " " + getUser().getName())
-                            .position(new LatLng(location.getLatitude(), location.getLongitude())));
-
-
-                }
-
-                @Override
-                public void onError() {
-
-                }
-            });
-
 
         } else {
             MarkerHelper.animateMarker(mPositionMarker, location); // Helper method for smooth
