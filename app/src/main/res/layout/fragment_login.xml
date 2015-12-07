@@ -3,57 +3,37 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center">
+    android:gravity="center"
+    android:orientation="vertical">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Log In via social networks"
-        android:textSize="16sp"
-        android:gravity="center"
         android:layout_gravity="center"
         android:layout_marginBottom="25dp"
+        android:gravity="center"
+        android:text="Log In via social networks"
+        android:textSize="16sp"
         />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp">
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:visibility="gone"/>
-        <Button
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:id="@+id/vk"
-            android:layout_gravity="center_horizontal"
-            android:background="@drawable/ic_vk"
-            android:layout_margin="8dp"
-            android:padding="15dp"
-            android:textColor="#ffffffff"
-            android:visibility="gone"/>
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:visibility="gone"/>
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
 
         <Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
 
-        <Button
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:id="@+id/facebook"
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/login_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/ic_fb"
-            android:layout_margin="8dp"
-            android:padding="15dp"
-            android:textColor="#ffffffff" />
+            android:layout_marginBottom="30dp"
+            android:layout_marginTop="30dp"
+            android:padding="20dp" />
 
         <Space
             android:layout_width="0dp"

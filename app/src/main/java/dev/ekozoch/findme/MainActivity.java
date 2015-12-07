@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,14 +50,19 @@ public class MainActivity extends BaseActivity implements GoogleMap.OnMarkerClic
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                mBlurringView.setVisibility(View.VISIBLE);
+                container.setVisibility(View.VISIBLE);
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, new LoginFragment())
+                        .commit();
+                mBlurringView.invalidate();
             }
         });
 
-        FindMeApplication.currentUser = User.getCurrentUser();
+        FindMeApplication.currentUser = (User) ParseUser.getCurrentUser();
         if (getUser() == null) {
             //Если кэш пустой
+            ParseUser.logOut();
             User.logInAnonymous(new LogInCallback() {
                 @Override
                 public void done(ParseUser user, ParseException e) {
@@ -74,9 +77,11 @@ public class MainActivity extends BaseActivity implements GoogleMap.OnMarkerClic
                 }
             });
         } else {
+            setUpMapIfNeeded();
             ParseUser.logInInBackground(FindMeApplication.currentUser.getUsername(), FindMeApplication.currentUser.getUsername(), new LogInCallback() {
                 @Override
                 public void done(ParseUser parseUser, ParseException e) {
+                    FindMeApplication.currentUser = (User) parseUser;
                     setUpMapIfNeeded();
                 }
             });
@@ -162,11 +167,11 @@ public class MainActivity extends BaseActivity implements GoogleMap.OnMarkerClic
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        //Это зачем-то нужно для инициализации соцсетей
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(SOCIAL_NETWORK_TAG);
-        if (fragment != null) {
-            fragment.onActivityResult(requestCode, resultCode, data);
-        }
+//        //Это зачем-то нужно для инициализации соцсетей
+//        Fragment fragment = getSupportFragmentManager().findFragmentByTag(SOCIAL_NETWORK_TAG);
+//        if (fragment != null) {
+//            fragment.onActivityResult(requestCode, resultCode, data);
+//        }
     }
 
     private void createLocationRequest() {

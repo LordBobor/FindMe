@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/FindMe.iml" filepath="$PROJECT_DIR$/FindMe.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/blurringview/blurringview.iml" filepath="$PROJECT_DIR$/blurringview/blurringview.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tagcloud/tagcloud.iml" filepath="$PROJECT_DIR$/tagcloud/tagcloud.iml" />
     </modules>
   </component>
 </project>

@@ -9,6 +9,7 @@ import android.location.Location;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -109,6 +110,7 @@ public class MarkerHelper {
 
             @Override
             public void onError() {
+                Log.e("LOG", "Counld not load picture");
             }
         });
     }

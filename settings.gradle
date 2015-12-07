@@ -1,1 +1,1 @@
-include ':app', ':blurringview'
+include ':app', ':blurringview', ':tagcloud'

@@ -1,76 +1,41 @@
 package dev.ekozoch.findme;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
-import com.github.gorbin.asne.core.SocialNetwork;
-import com.github.gorbin.asne.core.SocialNetworkManager;
-import com.github.gorbin.asne.core.listener.OnLoginCompleteListener;
-import com.github.gorbin.asne.core.listener.OnRequestSocialPersonCompleteListener;
-import com.github.gorbin.asne.core.persons.SocialPerson;
-import com.github.gorbin.asne.facebook.FacebookSocialNetwork;
-import com.github.gorbin.asne.vk.VkSocialNetwork;
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
-import com.vk.sdk.VKScope;
 
-import java.util.ArrayList;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Arrays;
-import java.util.List;
 
+import dev.ekozoch.findme.parse.classes.Interest;
 import dev.ekozoch.findme.parse.classes.User;
 
 
-public class LoginFragment extends Fragment implements OnLoginCompleteListener,
-        SocialNetworkManager.OnInitializationCompleteListener,
-        OnRequestSocialPersonCompleteListener {
-    /**
-     * SocialNetwork Ids in ASNE:
-     * 1 - Twitter
-     * 2 - LinkedIn
-     * 3 - Google Plus
-     * 4 - Facebook
-     * 5 - Vkontakte
-     * 6 - Odnoklassniki
-     * 7 - Instagram
-     */
-    public static final int FACEBOOK = 4;
-    public static final int VK = 5;
-    public static SocialNetworkManager mSocialNetworkManager;
-    private Button facebook;
-    private Button vkontakte;
-    private View.OnClickListener loginClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            int networkId = 0;
-            switch (view.getId()) {
-                case R.id.facebook:
-                    networkId = FACEBOOK;
-                    break;
-                case R.id.vk:
-                    networkId = VK;
-                    break;
-            }
-            SocialNetwork socialNetwork = mSocialNetworkManager.getSocialNetwork(networkId);
-            if (!socialNetwork.isConnected()) {
-                if (networkId != 0) {
-                    socialNetwork.requestLogin();
-                } else {
-                    Toast.makeText(getActivity(), "Social Network Authorization Error", Toast.LENGTH_LONG).show();
-                }
-            } else {
-                startProfile(socialNetwork.getID());
-            }
-        }
-    };
+public class LoginFragment extends Fragment {
+    CallbackManager callbackManager;
 
     public LoginFragment() {
     }
@@ -79,100 +44,150 @@ public class LoginFragment extends Fragment implements OnLoginCompleteListener,
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_login, container, false);
-        // init buttons and set Listener
-        facebook = (Button) rootView.findViewById(R.id.facebook);
-        facebook.setOnClickListener(loginClick);
-        vkontakte = (Button) rootView.findViewById(R.id.vk);
-        vkontakte.setOnClickListener(loginClick);
 
-        //Get Keys for initiate SocialNetworks
-        String VK_KEY = getActivity().getString(R.string.vk_app_id);
+        callbackManager = CallbackManager.Factory.create();
+        LoginButton loginButton = (LoginButton) rootView.findViewById(R.id.login_button);
+        loginButton.setReadPermissions(Arrays.asList("public_profile", "user_friends", "user_photos", "user_likes"));
+        // If using in a fragment
+        loginButton.setFragment(this);
+        // Other app specific specialization
 
-        //Chose permissions
-        ArrayList<String> fbScope = new ArrayList<String>();
-        fbScope.addAll(Arrays.asList("public_profile, email, user_friends"));
-        String[] vkScope = new String[] {
-                VKScope.FRIENDS,
-                VKScope.WALL,
-                VKScope.PHOTOS,
-                VKScope.NOHTTPS,
-                VKScope.STATUS,
-        };
+        final User user = (User) ParseUser.getCurrentUser();
 
-        //Use manager to manage SocialNetworks
-        mSocialNetworkManager = (SocialNetworkManager) getFragmentManager().findFragmentByTag(BaseActivity.SOCIAL_NETWORK_TAG);
-
-        //Check if manager exist
-        if (mSocialNetworkManager == null) {
-            mSocialNetworkManager = new SocialNetworkManager();
-
-            //Init and add to manager FacebookSocialNetwork
-            FacebookSocialNetwork fbNetwork = new FacebookSocialNetwork(this, fbScope);
-            mSocialNetworkManager.addSocialNetwork(fbNetwork);
-
-            VkSocialNetwork vkNetwork = new VkSocialNetwork(this, VK_KEY, vkScope);
-            mSocialNetworkManager.addSocialNetwork(vkNetwork);
-
-            //Initiate every network from mSocialNetworkManager
-            getFragmentManager().beginTransaction().add(mSocialNetworkManager, BaseActivity.SOCIAL_NETWORK_TAG).commit();
-            mSocialNetworkManager.setOnInitializationCompleteListener(this);
-        } else {
-            //if manager exist - get and setup login only for initialized SocialNetworks
-            if(!mSocialNetworkManager.getInitializedSocialNetworks().isEmpty()) {
-                List<SocialNetwork> socialNetworks = mSocialNetworkManager.getInitializedSocialNetworks();
-                for (SocialNetwork socialNetwork : socialNetworks) {
-                    socialNetwork.setOnLoginCompleteListener(this);
-                }
+        // Callback registration
+        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                requestUserName(user, loginResult.getAccessToken());
             }
-        }
+
+            @Override
+            public void onCancel() {
+                // App code
+            }
+
+            @Override
+            public void onError(FacebookException exception) {
+                // App code
+            }
+        });
         return rootView;
     }
 
-    @Override
-    public void onSocialNetworkManagerInitialized() {
-        //when init SocialNetworks - get and setup login only for initialized SocialNetworks
-        for (SocialNetwork socialNetwork : mSocialNetworkManager.getInitializedSocialNetworks()) {
-            socialNetwork.setOnLoginCompleteListener(this);
+    private void requestUserName(final User user, AccessToken accessToken) {
+        GraphRequest request = GraphRequest.newMeRequest(
+                accessToken,
+                new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        Log.e("LOL", object.toString());
+
+                        setUserName(user, response.getJSONObject());
+                        requestUserPic(user);
+                    }
+                });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,name, groups");
+        request.setParameters(parameters);
+        request.executeAsync();
+    }
+
+    private void setUserName(User user, JSONObject jsonObject) {
+        try {
+            user.setUsername(jsonObject.getString("id"));
+            user.setPassword(jsonObject.getString("id"));
+            user.setName(jsonObject.getString("name"));
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
-    @Override
-    public void onLoginSuccess(int networkId) {
-        startProfile(networkId);
+    private void requestUserPic(final User user) {
+        Bundle parameters = new Bundle();
+        parameters.putString("height", "720");
+        parameters.putString("width", "720");
+        parameters.putBoolean("redirect", false);
+
+        new GraphRequest(
+                AccessToken.getCurrentAccessToken(),
+                "/me/picture",
+                parameters,
+                HttpMethod.GET,
+                new GraphRequest.Callback() {
+                    public void onCompleted(GraphResponse response) {
+                        Log.e("LOL1", response.getJSONObject().toString());
+
+                        setUserPic(user, response.getJSONObject());
+                        saveUserToParse(user);
+                    }
+                }
+        ).executeAsync();
     }
 
-    @Override
-    public void onError(int networkId, String requestID, String errorMessage, Object data) {
-        Toast.makeText(getActivity(), getActivity().getString(R.string.fm_err) + errorMessage, Toast.LENGTH_LONG).show();
+    private void setUserPic(User user, JSONObject jsonObject) {
+        try {
+            user.setUserPic(jsonObject.getJSONObject("data").getString("url").replace("\\", ""));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void startProfile(int networkId){
-        SocialNetwork socialNetwork = mSocialNetworkManager.getSocialNetwork(networkId);
-        socialNetwork.setOnRequestCurrentPersonCompleteListener(this);
-        socialNetwork.requestCurrentPerson();
+    private void requestUserLikes(final User user) {
+        new GraphRequest(
+                AccessToken.getCurrentAccessToken(),
+                "me/likes",
+                null,
+                HttpMethod.GET,
+                new GraphRequest.Callback() {
+                    public void onCompleted(GraphResponse response) {
+                        Log.e("LOL2", response.getJSONObject().toString());
+                        setUserInterests(user, response.getJSONObject());
+                    }
+                }
+        ).executeAsync();
     }
 
-    @Override
-    public void onRequestSocialPersonSuccess(int i, SocialPerson socialPerson) {
-        final String accountUsername = socialPerson.id;
-        final String accountPassword = socialPerson.id;
-        final String userName = socialPerson.name;
-        final String userPic = socialPerson.avatarURL;
+    private void setUserInterests(final User user, JSONObject jsonObject) {
+        try {
+            JSONArray interests = jsonObject.getJSONArray("data");
+            final int[] j = {0};
+            final int count = interests.length();
+            for (int i = 0; i < count; ++i) {
+                String interest = interests.getJSONObject(i).getString("name");
+                Interest.saveInterestQuery(interest, user, new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        j[0]++;
+                        if (j[0] == count - 1) {
+                            user.saveInBackground();
+                        }
+                    }
+                });
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
-        final User user = (User) ParseUser.getCurrentUser();
-        user.setUsername(accountUsername);
-        user.setPassword(accountPassword);
-        user.setName(userName);
-        user.setUserPic(userPic);
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    private void saveUserToParse(final User user) {
         user.signUpInBackground(new SignUpCallback() {
             @Override
             public void done(final ParseException e) {
                 if (e != null) {
-                    ParseUser.logInInBackground(accountUsername, accountPassword, new LogInCallback() {
+                    ParseUser.logInInBackground(user.getUsername(), user.getUsername(), new LogInCallback() {
                         public void done(ParseUser user, ParseException e) {
                             if (user != null) {
                                 FindMeApplication.currentUser = (User) user;
                                 Toast.makeText(getActivity(), "LogIn success", Toast.LENGTH_SHORT).show();
+                                requestUserLikes((User) user);
                             } else {
                                 Toast.makeText(getActivity(), "LogIn fail", Toast.LENGTH_SHORT).show();
                                 e.printStackTrace();
